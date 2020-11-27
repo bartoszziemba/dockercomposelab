@@ -1,0 +1,48 @@
+version: '3'
+services:
+    php:
+        build: ./php/
+        links:
+           - mariadb
+        expose:
+           - 9000
+        networks:
+          - backend
+        volumes:
+           - ./DocumentRoot:/var/www/html
+    apache:
+        build: ./apache/
+        ports:
+            - 6666:80
+        volumes:
+            - ./DocumentRoot:/var/www/html
+            - ./apache/docker.apache.conf:/usr/local/apache2/conf.d/docker.apache.conf
+        networks:
+            - frontend
+            - backend
+        links: 
+          - php
+
+
+    mariadb:
+        image: mariadb:10.1
+        volumes:
+            - mariadb:/var/lib/mysql
+        environment:
+            TZ: "Europe/Rome"
+            MYSQL_ALLOW_EMPTY_PASSWORD: "no"
+            MYSQL_ROOT_PASSWORD: "rootpwd"
+            MYSQL_USER: 'testuser'
+            MYSQL_PASSWORD: 'testpassword'
+            MYSQL_DATABASE: 'testdb'
+        networks:
+          - backend
+
+volumes:
+    mariadb:
+
+networks:
+     frontend:
+         driver: bridge
+     backend:
+         driver: bridge
