@@ -1,7 +1,7 @@
 version: '3'
 services:
     php:
-        build: ./php/
+        image: php-custom
         links:
            - mariadb
         expose:
@@ -10,10 +10,16 @@ services:
           - backend
         volumes:
            - ./DocumentRoot:/var/www/html
+        deploy:
+          replicas: 2
+          update_config:
+           parallelism: 2
+           delay: 10s
+
     apache:
-        build: ./apache/
+        image: apache-custom
         ports:
-            - 6666:80
+          - 6666:80
         volumes:
             - ./DocumentRoot:/var/www/html
             - ./apache/docker.apache.conf:/usr/local/apache2/conf.d/docker.apache.conf
@@ -22,6 +28,11 @@ services:
             - backend
         links: 
           - php
+        deploy:
+          replicas: 2
+          update_config:
+           parallelism: 2
+           delay: 10s
 
 
     mariadb:
@@ -37,12 +48,17 @@ services:
             MYSQL_DATABASE: 'testdb'
         networks:
           - backend
+        deploy:
+          replicas: 1
+          update_config:
+           parallelism: 2
+           delay: 10s
 
 volumes:
     mariadb:
 
 networks:
      frontend:
-         driver: bridge
+         driver: overlay
      backend:
-         driver: bridge
+         driver: overlay 
